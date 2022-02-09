@@ -1,8 +1,8 @@
 <template>
     <div class="result-list">
-        <div class="label-text" v-if="hasResult">
-            <div class="result-message"> We found {{ total }} result</div>
-            <div class="input-checkbox-container" v-for="option in resultList">
+        <div v-if="hasResult">
+            <div class="result-message"> We found {{ total }} results</div>
+            <div class="result-container" v-for="option in resultList">
                 <SingleResultElement :resultModel="option"></SingleResultElement>
             </div>
         </div>

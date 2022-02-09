@@ -13,7 +13,6 @@ class Weather2Factory extends Factory
      */
     public function definition()
     {
-
         //Random temperatures
         $tempArray = [];
         for($i = 0; $i <=24; $i++) {
@@ -21,7 +20,7 @@ class Weather2Factory extends Factory
         };
 
         return [
-            'date' => $this->faker->dateTimeBetween('-2 years', '+2 years', 'GMT'),
+            'date' => $this->faker->dateTimeBetween('-1 years', '+1 years', 'GMT'),
             'location' => $this->faker->numberBetween(1, 5), //Considering we will have it least 5 entries in locationDB
             'temperature' => json_encode($tempArray),
         ];

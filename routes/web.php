@@ -17,12 +17,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WeatherController::class, 'renderHomePage']);
 
-Route::post('/weather', [WeatherController::class, 'getRequestList']);
-Route::get('/weather', [WeatherController::class, 'getRequestList']);
+Route::post('/weather', [WeatherController::class, 'getAllWeatherRecord']);
+Route::get('/weather', [WeatherController::class, 'weather']);
+Route::post('/customWeatherSearch', [WeatherController::class, 'getWeatherRequestList']);
 
-Route::delete('/erase', [WeatherController::class, 'eraseWeather']);
-Route::get('/weather/temperature', [WeatherController::class, 'getTemperature']);
-Route::get('/weather/location', [WeatherController::class, 'getLocation']);
+Route::get('/erase', [WeatherController::class, 'eraseWeatherRecord']);
+Route::get('/weather/temperature', [WeatherController::class, 'getWeatherByTemperature']);
+Route::get('/weather/location', [WeatherController::class, 'getWeatherRequestList']); //will work as the basic one when parameters are given
 
-Route::post('/addRecord', [WeatherController::class, 'create']);
-Route::post('/updateRecord', [WeatherController::class, 'updateWeather']);
+Route::post('/addWeatherRecord', [WeatherController::class, 'addWeatherRecord']);
+Route::post('/updateWeatherRecord', [WeatherController::class, 'updateWeatherRecord']);

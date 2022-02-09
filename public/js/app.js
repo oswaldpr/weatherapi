@@ -1727,10 +1727,7 @@ __webpack_require__.r(__webpack_exports__);
       type: String,
       "default": ""
     },
-    value: {
-      type: String,
-      "default": ""
-    }
+    value: {}
   }
 });
 
@@ -1859,6 +1856,11 @@ __webpack_require__.r(__webpack_exports__);
         };
       }
     }
+  },
+  computed: {
+    dateGMT: function dateGMT() {
+      return new Date(this.resultModel.date);
+    }
   }
 });
 
@@ -1887,6 +1889,9 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
+//
+//
+//
 //
 //
 //
@@ -2076,8 +2081,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         endTemperature: weatherQueryModel.endTemperature
       };
     },
-    getWeather: function () {
-      var _getWeather = _asyncToGenerator(
+    searchWeather: function () {
+      var _searchWeather = _asyncToGenerator(
       /*#__PURE__*/
       _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee() {
         var formData, appOutput;
@@ -2102,31 +2107,28 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }, _callee, this);
       }));
 
-      function getWeather() {
-        return _getWeather.apply(this, arguments);
+      function searchWeather() {
+        return _searchWeather.apply(this, arguments);
       }
 
-      return getWeather;
+      return searchWeather;
     }(),
-    postWeather: function () {
-      var _postWeather = _asyncToGenerator(
+    clearInputs: function () {
+      var _clearInputs = _asyncToGenerator(
       /*#__PURE__*/
       _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee2() {
-        var formData, appOutput;
         return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                formData = this.getWeatherQueryModel();
-                _context2.next = 3;
-                return Object(_appAxiosOperation__WEBPACK_IMPORTED_MODULE_1__["axiosOperation"])('weather', formData);
+                this.weatherQueryModel.startDate = '';
+                this.weatherQueryModel.endDate = '';
+                this.weatherQueryModel.city = '';
+                this.weatherQueryModel.state = '';
+                this.weatherQueryModel.startTemperature = '';
+                this.weatherQueryModel.endTemperature = '';
 
-              case 3:
-                appOutput = _context2.sent;
-                // const message = success ? 'Success' : 'Error';
-                console.log(appOutput);
-
-              case 5:
+              case 6:
               case "end":
                 return _context2.stop();
             }
@@ -2134,15 +2136,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         }, _callee2, this);
       }));
 
-      function postWeather() {
-        return _postWeather.apply(this, arguments);
+      function clearInputs() {
+        return _clearInputs.apply(this, arguments);
       }
 
-      return postWeather;
+      return clearInputs;
     }()
   },
   data: function data() {
-    debugger;
     var resultList = this.strResultList;
     var showResultList = this.showResult;
     return {
@@ -39062,16 +39063,15 @@ var render = function() {
     _vm.hasResult
       ? _c(
           "div",
-          { staticClass: "label-text" },
           [
             _c("div", { staticClass: "result-message" }, [
-              _vm._v(" We found " + _vm._s(_vm.total) + " result")
+              _vm._v(" We found " + _vm._s(_vm.total) + " results")
             ]),
             _vm._v(" "),
             _vm._l(_vm.resultList, function(option) {
               return _c(
                 "div",
-                { staticClass: "input-checkbox-container" },
+                { staticClass: "result-container" },
                 [_c("SingleResultElement", { attrs: { resultModel: option } })],
                 1
               )
@@ -39110,9 +39110,7 @@ var render = function() {
     "div",
     { staticClass: "single-result" },
     [
-      _c("DisplayElement", {
-        attrs: { label: "Date", value: this.resultModel.date }
-      }),
+      _c("DisplayElement", { attrs: { label: "Date", value: this.dateGMT } }),
       _vm._v(" "),
       _c("DisplayElement", {
         attrs: {
@@ -39402,13 +39400,31 @@ var render = function() {
                         attrs: { type: "button", id: "getWeather" },
                         on: {
                           click: function($event) {
-                            return _vm.getWeather()
+                            return _vm.searchWeather()
                           }
                         }
                       },
                       [
                         _vm._v(
                           "\n                                    getWeather\n                                "
+                        )
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "button",
+                      {
+                        staticClass: "btn btn-default",
+                        attrs: { type: "button", id: "clearInputs" },
+                        on: {
+                          click: function($event) {
+                            return _vm.clearInputs()
+                          }
+                        }
+                      },
+                      [
+                        _vm._v(
+                          "\n                                    Clear\n                                "
                         )
                       ]
                     )

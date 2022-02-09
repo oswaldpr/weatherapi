@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Location;
 use App\Models\Weather2;
-use App\Models\WeatherServiceOutput;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class WeatherController extends Controller
 {
+    public static function getPreferredCity()
+    {
+        return 'Quebec'; //preferredCity definition
+    }
+
     /**
      * Display the homepage.
      */
@@ -18,9 +21,30 @@ class WeatherController extends Controller
         return view('weather_dashboard', ['resultList' => []]);
     }
 
-    /**
-     * Display the homepage.
-     */
+    private static function sanitizeFieldValue($value = "")
+    {
+        return $value ? filter_var($value, FILTER_SANITIZE_STRING) : $value;
+    }
+
+    public static function getSanitizedRequest(Request $request)
+    {
+        $today = date("Y-m-d");
+        $maxDate = date("Y-m-d", strtotime("+1 Year"));
+
+        $serviceData = $request->serviceData ? json_decode($request->serviceData) : $request;
+        $result = new \stdClass();
+        $result->startDate = self::sanitizeFieldValue($serviceData->startDate ?? $today);
+        $result->endDate = self::sanitizeFieldValue($serviceData->endDate ?? $maxDate);
+        $result->lat = self::sanitizeFieldValue($serviceData->lat ?? '');
+        $result->lon = self::sanitizeFieldValue($serviceData->lon ?? '');
+        $result->city = self::sanitizeFieldValue($serviceData->city ?? '');
+        $result->state = self::sanitizeFieldValue($serviceData->state ?? '');
+        $result->startTemperature = self::sanitizeFieldValue($serviceData->startTemperature ?? '');
+        $result->endTemperature = self::sanitizeFieldValue($serviceData->endTemperature ?? '');
+
+        return $result;
+    }
+
     public function weather(Request $request)
     {
         $weatherResult = self::getWeatherRequestList($request);
@@ -28,18 +52,11 @@ class WeatherController extends Controller
         return view('weather_dashboard', ['resultList' => $weatherResult]);
     }
 
-    public function getWeatherRequestList(Request $request)
+    public function getAllWeatherRecord(Request $request)
     {
-        $parameters = WeatherQueryController::getSanitizedRequest($request);
+        $parameters = self::getSanitizedRequest($request);
         $startDateTZ = explode('T', $parameters->startDate);
         $endDateTZ = explode('T', $parameters->endDate);
-
-        $lowTempRequest = $parameters->startTemperature;
-        $highTempRequest = $parameters->endTemperature;
-        $lat = $parameters->lat;
-        $lon = $parameters->lon;
-        $city = $parameters->city;
-        $state = $parameters->state;
         $startDate = $startDateTZ[0];
         $endDate = $endDateTZ[0];
 
@@ -47,6 +64,63 @@ class WeatherController extends Controller
             ->where('date', '>=', $startDate)
             ->where('date', '<=', $endDate);
 
+        return self::populateWeatherRecordList($weatherQueryResult);
+    }
+
+    public function getAllLocationRecord(Request $request)
+    {
+        return Location::query()->get();
+    }
+
+    public function getWeatherRequestList(Request $request)
+    {
+        $parameters = self::getSanitizedRequest($request);
+        $startDateTZ = explode('T', $parameters->startDate);
+        $endDateTZ = explode('T', $parameters->endDate);
+        $startDate = $startDateTZ[0];
+        $endDate = $endDateTZ[0];
+
+        $lowTempRequest = $parameters->startTemperature;
+        $highTempRequest = $parameters->endTemperature;
+        $lat = $parameters->lat;
+        $lon = $parameters->lon;
+        $city = $parameters->city;
+        $state = $parameters->state;
+
+        // This should check the value before fetch data or not but it seems not working here when you have missing parameter ( but it works on my local sql)
+        $locationQueryResult = Location::query()
+//            ->where('city', '=', $city)
+//            ->where('lat', '=', $lat ?? '`lat`')
+//            ->where('lon', '=', $lon ?? '`lon`')
+//            ->where('state', '=', $state ?? '`state`')
+            ->get();
+
+        $locQueryArr = array();
+        foreach ($locationQueryResult as $item) {
+            $locQueryArr[] = $item->id;
+        }
+
+        $weatherQueryResult = Weather2::query()
+            ->where('date', '>=', $startDate)
+            ->where('date', '<=', $endDate)
+            ->whereIn('location', $locQueryArr)
+            ->get();
+
+        return self::populateWeatherRecordList($weatherQueryResult, $lowTempRequest, $highTempRequest);
+    }
+
+    private function getLocationResultIdList($locationQueryResult)
+    {
+        $list = array();
+        foreach ($locationQueryResult as $item) {
+            $list[] = $item->id;
+        }
+
+        return $list;
+    }
+
+    private function populateWeatherRecordList($weatherQueryResult = array(), $lowTempRequest = "", $highTempRequest = "")
+    {
         $weatherResult = array();
         foreach ($weatherQueryResult as $item) {
             $currentItem = $item->getResultWithTemperatureFields();
@@ -60,162 +134,87 @@ class WeatherController extends Controller
         return $weatherResult;
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index()
+    public function eraseWeatherRecord(Request $request)
     {
-        //
+        $hasKey = count($request->all()) > 0;
+        if($hasKey){
+            $isAll = false;
+            $parameters = self::getSanitizedRequest($request);
+            // use query to find request result then delete records by using ->delete()
+        } else {
+            $isAll = true;
+            Weather2::query()->delete();
+        }
+
+        return view('deleted_weather', ['isAll' => $isAll]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create(Request $request)
+    public function getWeatherByTemperature(Request $request)
     {
-        //
+        $request->startTemperature = self::sanitizeFieldValue($request->start ?? 0);
+        $request->endTemperature = self::sanitizeFieldValue($request->end ?? 100);
+        return self::weather($request);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     * @return Response
-     */
-    public function store(Request $request)
+    public function addWeatherRecord(Request $request)
     {
-        //
+        $parameters = self::getSanitizedRequest($request);
+
+        $id = Location::query()->create([
+            'lat' => $parameters->lat,
+            'lon' => $parameters->lon,
+            'city' => $parameters->city,
+            'state' => $parameters->state,
+        ])->get('id');
+
+        return Weather2::query()->create([
+            'date' => $parameters->date,
+            'location' => $id,
+            'temperature' => $parameters->temperature,
+            ])->get('id');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function show($id)
+    public function updateWeatherRecord(Request $request)
     {
-        //
-    }
+        $weatherDate = self::sanitizeFieldValue($request->weatherDate);
+        $weatherTemperature = self::sanitizeFieldValue($request->weathertTemperature);
+        $parameters = self::getSanitizedRequest($request);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param Request $request
-     * @param  int  $id
-     * @return Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
-    /**
-     * service to get the weather
-     **/
-    public function getWeather(Request $request)
-    {
-        $serviceData = json_decode($request->serviceData);
-        $startDate = $serviceData->startDate;
-        $endDate = $serviceData->endDate;
-        $city = $serviceData->city;
-        $state = $serviceData->state;
-        $startTemperature = $serviceData->startTemperature;
-        $endTemperature = $serviceData->endTemperature;
-
-        $weather = Weather2::all();
-        $weather = Weather2::where();
-
-
-        echo(json_encode(
-            array(
-                'result' => $serviceData,
-                'errorList' => [],
-            )
-        ));
-        die;
-    }
-
-    /**
-     * service to get the weather
-     **/
-    public function getRequestList(Request $request)
-    {
-//        $onlyGetID = false;
-        // Time is up, the idea here is to check parameter and only fetch the locationID and build the hole object at the end
-        $parameters = WeatherQueryController::getSanitizedRequest($request);
-        $startDateTZ = explode('T', $parameters->startDate);
-        $endDateTZ = explode('T', $parameters->endDate);
         $lat = $parameters->lat;
         $lon = $parameters->lon;
         $city = $parameters->city;
         $state = $parameters->state;
-        $startDate = $startDateTZ[0];
-        $endDate = $endDateTZ[0];
 
-
-        $weatherQueryResult = Weather2::all()
-            ->where('date', '>=', $startDate)
-            ->where('date', '<=', $endDate)
-            ->all();
-
-        $weatherResult = array();
-        foreach ($weatherQueryResult as $item) {
-            $weatherResult[] = $item->getAttributes();
+        if($lat || $lon || $city || $state){
+            $array = array();
+            if($lat){
+                $array['lat'] = $lat;
+            }
+            if($lon){
+                $array['lon'] = $lon;
+            }
+            if($city){
+                $array['city'] = $city;
+            }
+            if($state){
+                $array['state'] = $state;
+            }
+            $weatherResult = self::getAllLocationRecord($request);
+            $weatherResult[0]->update($array);
         }
 
-        $locationQueryResult = Location::all()->all();
-        $locationResult = array();
-        foreach ($locationQueryResult as $item) {
-            $locationResult[] = $item->getAttributes();
+        if($weatherDate || $weatherTemperature){
+            $array = array();
+            if($weatherDate){
+                $array['date'] = $weatherDate;
+            }
+            if($weatherTemperature){
+                $array['temperature'] = $weatherTemperature;
+            }
+            $weatherResult = self::getWeatherRequestList($request);
+            $weatherResult[0]->update($array);
         }
 
-
-        $queryWeather = WeatherQueryController::buildWeatherQuery($request);
-        $queryLoc = WeatherQueryController::buildLocationQuery($request);
-
-//        $lAll = Location::all()
-//            ->where('lat','=', $lat ?: $lAllll)
-//            ->where('lon','=', $lon ?: 'lon')
-//            ->where('city','=', $city ?: 'city')
-//            ->where('state','=', $state ?: 'state')
-//            ->all();
-//
-//        $requestQueryWeather = WeatherQueryController::executeQuery($queryWeather);
-//        $requestQueryLoc = WeatherQueryController::executeQuery($queryLoc);
-
-        echo(json_encode(array(
-            'weather' => $weatherResult,
-            'location' => $locationResult,
-        )
-
-        ));
-        die;
+        return 'success';
     }
 }

@@ -18,10 +18,7 @@
                 type: String,
                 default: ""
             },
-            value: {
-                type: String,
-                default: ""
-            },
+            value: {},
         },
     };
 

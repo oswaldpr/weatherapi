@@ -1,6 +1,6 @@
 <template>
     <div class="single-result">
-        <DisplayElement label="Date" :value="this.resultModel.date" />
+        <DisplayElement label="Date" :value="this.dateGMT" />
         <DisplayElement label="Medium temperature" :value="this.resultModel.temperature" />
         <DisplayElement label="City" :value="this.resultModel.location.city" />
         <DisplayElement label="State" :value="this.resultModel.location.state" />
@@ -29,6 +29,11 @@
                 },
             },
         },
+        computed: {
+            dateGMT: function (){
+                return new Date(this.resultModel.date);
+            }
+        }
     };
 
 </script>

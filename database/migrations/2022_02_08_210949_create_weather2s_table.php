@@ -16,7 +16,7 @@ class CreateWeather2sTable extends Migration
         Schema::create('weather2s', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->date("date");
-            $table->text("location");
+            $table->integer("location");
             $table->text("temperature");
         });
     }

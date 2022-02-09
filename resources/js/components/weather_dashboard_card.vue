@@ -53,8 +53,11 @@
                             </div>
 
                             <div class="text-center">
-                                <button type="button" id="getWeather" class="btn btn-default" @click="getWeather()">
+                                <button type="button" id="getWeather" class="btn btn-default" @click="searchWeather()">
                                     getWeather
+                                </button>
+                                <button type="button" id="clearInputs" class="btn btn-default" @click="clearInputs()">
+                                    Clear
                                 </button>
                             </div>
                         </form>
@@ -187,17 +190,19 @@ import ResultList from "./ResultList";
                     endTemperature : weatherQueryModel.endTemperature,
                 }
             },
-            getWeather: async function(){
+            searchWeather: async function(){
                 const formData = this.getWeatherQueryModel()
                 const appOutput = await axiosOperation('weather', formData);
                 this.showResultList = true;
                 this.resultList = appOutput;
             },
-            postWeather: async function(){
-                const formData = this.getWeatherQueryModel()
-                const appOutput = await axiosOperation('weather', formData);
-                // const message = success ? 'Success' : 'Error';
-                console.log(appOutput);
+            clearInputs: async function(){
+                this.weatherQueryModel.startDate = '';
+                this.weatherQueryModel.endDate = '';
+                this.weatherQueryModel.city = '';
+                this.weatherQueryModel.state = '';
+                this.weatherQueryModel.startTemperature = '';
+                this.weatherQueryModel.endTemperature = '';
             },
         },
         data: function (){

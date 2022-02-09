@@ -49,6 +49,7 @@ class Weather2 extends Model
     {
         $tempArray = json_decode($this->temperature);
         $medTem = array_sum($tempArray) / count($tempArray);
+        $this->location = Location::query()->where('id', '=', $this->location)->first();
         $this->highTemp = current($tempArray);
         $this->lowTemp = end($tempArray);
         $this->temperature = round($medTem, 2);
