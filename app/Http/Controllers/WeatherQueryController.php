@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 
+use DateTime;
 use Illuminate\Http\Request;
 use mysqli;
 
@@ -17,10 +18,13 @@ class WeatherQueryController extends Controller
 
     public static function getSanitizedRequest(Request $request)
     {
-        $serviceData = json_decode($request->serviceData);
+        $today = date("Y-m-d");
+        $maxDate = date("Y-m-d", strtotime("+1 Year"));
+
+        $serviceData = $request->serviceData ? json_decode($request->serviceData) : $request;
         $result = new \stdClass();
-        $result->startDate = self::sanitizeFieldValue($serviceData->startDate ?? '');
-        $result->endDate = self::sanitizeFieldValue($serviceData->endDate ?? '');
+        $result->startDate = self::sanitizeFieldValue($serviceData->startDate ?? $today);
+        $result->endDate = self::sanitizeFieldValue($serviceData->endDate ?? $maxDate);
         $result->lat = self::sanitizeFieldValue($serviceData->lat ?? '');
         $result->lon = self::sanitizeFieldValue($serviceData->lon ?? '');
         $result->city = self::sanitizeFieldValue($serviceData->city ?? '');

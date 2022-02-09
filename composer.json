@@ -16,7 +16,8 @@
         "laravel/tinker": "^2.5",
         "reliese/laravel": "^0.0.18",
         "ext-json": "*",
-        "ext-mysqli": "*"
+        "ext-mysqli": "*",
+        "ext-xdebug": "*"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

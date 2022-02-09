@@ -15,7 +15,49 @@ class WeatherController extends Controller
      */
     public function renderHomePage()
     {
-        return view('weather_dashboard');
+        return view('weather_dashboard', ['resultList' => []]);
+    }
+
+    /**
+     * Display the homepage.
+     */
+    public function weather(Request $request)
+    {
+        $weatherResult = self::getWeatherRequestList($request);
+
+        return view('weather_dashboard', ['resultList' => $weatherResult]);
+    }
+
+    public function getWeatherRequestList(Request $request)
+    {
+        $parameters = WeatherQueryController::getSanitizedRequest($request);
+        $startDateTZ = explode('T', $parameters->startDate);
+        $endDateTZ = explode('T', $parameters->endDate);
+
+        $lowTempRequest = $parameters->startTemperature;
+        $highTempRequest = $parameters->endTemperature;
+        $lat = $parameters->lat;
+        $lon = $parameters->lon;
+        $city = $parameters->city;
+        $state = $parameters->state;
+        $startDate = $startDateTZ[0];
+        $endDate = $endDateTZ[0];
+
+        $weatherQueryResult = Weather2::all()
+            ->where('date', '>=', $startDate)
+            ->where('date', '<=', $endDate);
+
+        $weatherResult = array();
+        foreach ($weatherQueryResult as $item) {
+            $currentItem = $item->getResultWithTemperatureFields();
+            $matchLowTemp = !$lowTempRequest || $currentItem->lowTemp <= $lowTempRequest;
+            $matchHighTemp = !$highTempRequest || $currentItem->highTemp >= $highTempRequest;
+            if($matchLowTemp && $matchHighTemp){
+                $weatherResult[] = $currentItem;
+            }
+        }
+
+        return $weatherResult;
     }
 
     /**
@@ -120,20 +162,6 @@ class WeatherController extends Controller
         die;
     }
 
-    public function getSanitizedRequest(Request $request)
-    {
-        $serviceData = json_decode($request->serviceData);
-        $result = new \stdClass();
-        $result->startDate = filter_var($serviceData->startDate, FILTER_SANITIZE_STRING);
-        $result->endDate = filter_var($serviceData->endDate, FILTER_SANITIZE_STRING);
-        $result->city = filter_var($serviceData->city, FILTER_SANITIZE_STRING);
-        $result->state = filter_var($serviceData->state, FILTER_SANITIZE_STRING);
-        $result->startTemperature = filter_var($serviceData->startTemperature, FILTER_SANITIZE_STRING);
-        $result->endTemperature = filter_var($serviceData->endTemperature, FILTER_SANITIZE_STRING);
-
-        return $result;
-    }
-
     /**
      * service to get the weather
      **/
@@ -141,44 +169,53 @@ class WeatherController extends Controller
     {
 //        $onlyGetID = false;
         // Time is up, the idea here is to check parameter and only fetch the locationID and build the hole object at the end
+        $parameters = WeatherQueryController::getSanitizedRequest($request);
+        $startDateTZ = explode('T', $parameters->startDate);
+        $endDateTZ = explode('T', $parameters->endDate);
+        $lat = $parameters->lat;
+        $lon = $parameters->lon;
+        $city = $parameters->city;
+        $state = $parameters->state;
+        $startDate = $startDateTZ[0];
+        $endDate = $endDateTZ[0];
+
+
+        $weatherQueryResult = Weather2::all()
+            ->where('date', '>=', $startDate)
+            ->where('date', '<=', $endDate)
+            ->all();
+
+        $weatherResult = array();
+        foreach ($weatherQueryResult as $item) {
+            $weatherResult[] = $item->getAttributes();
+        }
+
+        $locationQueryResult = Location::all()->all();
+        $locationResult = array();
+        foreach ($locationQueryResult as $item) {
+            $locationResult[] = $item->getAttributes();
+        }
+
+
         $queryWeather = WeatherQueryController::buildWeatherQuery($request);
         $queryLoc = WeatherQueryController::buildLocationQuery($request);
 
-        $requestQueryWeather = WeatherQueryController::executeQuery($queryWeather);
-        $requestQueryLoc = WeatherQueryController::executeQuery($queryLoc);
+//        $lAll = Location::all()
+//            ->where('lat','=', $lat ?: $lAllll)
+//            ->where('lon','=', $lon ?: 'lon')
+//            ->where('city','=', $city ?: 'city')
+//            ->where('state','=', $state ?: 'state')
+//            ->all();
+//
+//        $requestQueryWeather = WeatherQueryController::executeQuery($queryWeather);
+//        $requestQueryLoc = WeatherQueryController::executeQuery($queryLoc);
 
         echo(json_encode(array(
-            'weather' => self::mapWeatherResult($requestQueryWeather),
-            'location' => self::mapLocationResult($requestQueryLoc),
+            'weather' => $weatherResult,
+            'location' => $locationResult,
         )
 
         ));
         die;
-    }
-
-    /**
-     * service to get the weather
-     **/
-    public function mapLocationResult(array $requestQuery)
-    {
-        $locationResult = [];
-        foreach ($requestQuery as $location) {
-            $locationResult[] = (new Location())->createFromArray($location);
-        }
-
-        return $locationResult;
-    }
-
-    /**
-     * service to get the weather
-     **/
-    public function mapWeatherResult(array $requestQuery)
-    {
-        $locationResult = [];
-        foreach ($requestQuery as $location) {
-            $locationResult[] = (new Weather2())->createFromArray($location);
-        }
-
-        return $locationResult;
     }
 }

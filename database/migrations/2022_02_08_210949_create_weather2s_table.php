@@ -18,7 +18,6 @@ class CreateWeather2sTable extends Migration
             $table->date("date");
             $table->text("location");
             $table->text("temperature");
-            $table->timestamps();
         });
     }
 

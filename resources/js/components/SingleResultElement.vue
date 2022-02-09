@@ -1,8 +1,9 @@
 <template>
     <div class="single-result">
-        <DisplayElement label="City" :value="this.resultModel.city" />
-        <DisplayElement label="State" :value="this.resultModel.state" />
         <DisplayElement label="Date" :value="this.resultModel.date" />
+        <DisplayElement label="Medium temperature" :value="this.resultModel.temperature" />
+        <DisplayElement label="City" :value="this.resultModel.location.city" />
+        <DisplayElement label="State" :value="this.resultModel.location.state" />
     </div>
 </template>
 
@@ -22,8 +23,8 @@
                     return {
                         id: '',
                         date: '',
-                        city: '',
-                        state: '',
+                        location: {},
+                        temperature: 0,
                     }
                 },
             },
@@ -33,10 +34,8 @@
 </script>
 
 <style lang="scss" scoped>
-
-  .topElement-content {
-    text-align: left;
-    width: 100%;
+  .single-result {
+    margin-bottom: 15px;
   }
 
 </style>

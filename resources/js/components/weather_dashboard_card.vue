@@ -19,27 +19,6 @@
                                 <div class="clearfix"></div>
                             </div>
 
-<!--                            <div class="location">-->
-<!--                                <InputWrapperElement label="City" name="city" class="col-6 float-left">-->
-<!--                                    <vSelect label="City"-->
-<!--                                             id="city_input"-->
-<!--                                             name="city"-->
-<!--                                             :options="cityOptionList"-->
-<!--                                             v-model="city">-->
-<!--                                    </vSelect>-->
-<!--                                </InputWrapperElement>-->
-
-<!--                                <InputWrapperElement label="State" name="state" class="col-6 float-right">-->
-<!--                                    <vSelect label="State"-->
-<!--                                             id="state_input"-->
-<!--                                             name="state"-->
-<!--                                             :options="stateOptionList"-->
-<!--                                             v-model="state">-->
-<!--                                    </vSelect>-->
-<!--                                </InputWrapperElement>-->
-<!--                                <div class="clearfix"></div>-->
-<!--                            </div>-->
-
                             <div class="dates-range">
                                 <InputWrapperElement label="Start date" name="startDate" class="col-6 float-left">
                                     <datepicker format="yyyy-MM-dd"
@@ -79,7 +58,7 @@
                                 </button>
                             </div>
                         </form>
-                        <ResultList v-if="showResultList" :resultList="resultList"></ResultList>
+                        <ResultList v-if="showResultList" :resultList="getResultList()"></ResultList>
                     </div>
                 </div>
             </div>
@@ -103,11 +82,15 @@ import ResultList from "./ResultList";
             Datepicker
         },
         props: {
-            resultList: {
+            strResultList: {
                 type: Array,
                 default: function () {
                     return []
                 },
+            },
+            showResult: {
+                type: Boolean,
+                default: false,
             },
             weatherQueryModel: {
                 type: Object,
@@ -124,16 +107,6 @@ import ResultList from "./ResultList";
             },
         },
         computed: {
-            cityOptionList: function () {
-                const currentState = this.state;
-                const cityByStateList = this.getCityByStateList();
-                return [];
-            },
-            stateOptionList: function () {
-                const currentCity = this.city;
-                const cityByStateList = this.getCityByStateList();
-                return [];
-            },
             dateMin: function () {
                 return new Date();
             },
@@ -198,6 +171,9 @@ import ResultList from "./ResultList";
             },
         },
         methods:{
+            getResultList() {
+                return this.resultList;
+            },
             getWeatherQueryModel() {
                 const weatherQueryModel = this.weatherQueryModel;
                 const defaultStartDate = weatherQueryModel.startDate ? weatherQueryModel.startDate : this.dateMin;
@@ -225,10 +201,12 @@ import ResultList from "./ResultList";
             },
         },
         data: function (){
-            const showResultList = false;
+            const resultList = this.strResultList;
+            const showResultList = this.showResult;
 
             return {
-                showResultList
+                resultList,
+                showResultList,
             }
         }
     }

@@ -19,7 +19,7 @@ class CreateLocationsTable extends Migration
             $table->float("lon");
             $table->text("city");
             $table->text("state");
-            $table->timestamps();
+            $table->foreignId('weather2_id')->constrained();
         });
     }
 

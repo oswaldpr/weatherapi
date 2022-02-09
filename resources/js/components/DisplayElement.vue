@@ -1,11 +1,11 @@
 <template>
-    <div class="result-list">
-        <div class="col-6 col-form-label label labelWrapper">
-            <label>{{ label }}</label>
-        </div>
-        <div class="col-6 resulWrap controls">
-            {{ value }}
-        </div>
+    <div class="result-field">
+        <span class="col-6 col-form-label label labelWrapper">
+            <label><b>{{ label }}</b>:</label>
+        </span>
+        <span class="col-6 resulWrap controls">
+            {{  value }}
+        </span>
     </div>
 </template>
 
@@ -29,9 +29,10 @@
 
 <style lang="scss" scoped>
 
-  .topElement-content {
-    text-align: left;
-    width: 100%;
+  .result-field {
+      span {
+          padding: 0;
+      }
   }
 
 </style>

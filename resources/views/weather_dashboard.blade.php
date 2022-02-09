@@ -1,3 +1,9 @@
+<?php
+
+
+/** @var $resultList */
+?>
+
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -8,10 +14,9 @@
     <title>Weather Dashboard</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet" type="text/css">
-
 <body>
     <div id="app">
-        <weather-dashboard-card></weather-dashboard-card>
+        <weather-dashboard-card :str-result-list='<?php echo json_encode($resultList)?>' :show-result='true'></weather-dashboard-card>
     </div>
 
     <script type="text/javascript" src="{{ asset('js/app.js') }}"></script>

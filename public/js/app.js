@@ -1840,6 +1840,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "SingleResultElement",
@@ -1853,8 +1854,8 @@ __webpack_require__.r(__webpack_exports__);
         return {
           id: '',
           date: '',
-          city: '',
-          state: ''
+          location: {},
+          temperature: 0
         };
       }
     }
@@ -1954,27 +1955,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -1989,11 +1969,15 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     Datepicker: vuejs_datepicker__WEBPACK_IMPORTED_MODULE_3__["default"]
   },
   props: {
-    resultList: {
+    strResultList: {
       type: Array,
       "default": function _default() {
         return [];
       }
+    },
+    showResult: {
+      type: Boolean,
+      "default": false
     },
     weatherQueryModel: {
       type: Object,
@@ -2010,16 +1994,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }
   },
   computed: {
-    cityOptionList: function cityOptionList() {
-      var currentState = this.state;
-      var cityByStateList = this.getCityByStateList();
-      return [];
-    },
-    stateOptionList: function stateOptionList() {
-      var currentCity = this.city;
-      var cityByStateList = this.getCityByStateList();
-      return [];
-    },
     dateMin: function dateMin() {
       return new Date();
     },
@@ -2086,6 +2060,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }
   },
   methods: {
+    getResultList: function getResultList() {
+      return this.resultList;
+    },
     getWeatherQueryModel: function getWeatherQueryModel() {
       var weatherQueryModel = this.weatherQueryModel;
       var defaultStartDate = weatherQueryModel.startDate ? weatherQueryModel.startDate : this.dateMin;
@@ -2165,8 +2142,11 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     }()
   },
   data: function data() {
-    var showResultList = false;
+    debugger;
+    var resultList = this.strResultList;
+    var showResultList = this.showResult;
     return {
+      resultList: resultList,
       showResultList: showResultList
     };
   }
@@ -6631,7 +6611,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, ".topElement-content[data-v-fcdee3f6] {\n  text-align: left;\n  width: 100%;\n}", ""]);
+exports.push([module.i, ".result-field span[data-v-fcdee3f6] {\n  padding: 0;\n}", ""]);
 
 // exports
 
@@ -6688,7 +6668,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, ".topElement-content[data-v-4de3e1c8] {\n  text-align: left;\n  width: 100%;\n}", ""]);
+exports.push([module.i, ".single-result[data-v-4de3e1c8] {\n  margin-bottom: 15px;\n}", ""]);
 
 // exports
 
@@ -38992,12 +38972,12 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "result-list" }, [
-    _c("div", { staticClass: "col-6 col-form-label label labelWrapper" }, [
-      _c("label", [_vm._v(_vm._s(_vm.label))])
+  return _c("div", { staticClass: "result-field" }, [
+    _c("span", { staticClass: "col-6 col-form-label label labelWrapper" }, [
+      _c("label", [_c("b", [_vm._v(_vm._s(_vm.label))]), _vm._v(":")])
     ]),
     _vm._v(" "),
-    _c("div", { staticClass: "col-6 resulWrap controls" }, [
+    _c("span", { staticClass: "col-6 resulWrap controls" }, [
       _vm._v("\n        " + _vm._s(_vm.value) + "\n    ")
     ])
   ])
@@ -39131,15 +39111,22 @@ var render = function() {
     { staticClass: "single-result" },
     [
       _c("DisplayElement", {
-        attrs: { label: "City", value: this.resultModel.city }
-      }),
-      _vm._v(" "),
-      _c("DisplayElement", {
-        attrs: { label: "State", value: this.resultModel.state }
-      }),
-      _vm._v(" "),
-      _c("DisplayElement", {
         attrs: { label: "Date", value: this.resultModel.date }
+      }),
+      _vm._v(" "),
+      _c("DisplayElement", {
+        attrs: {
+          label: "Medium temperature",
+          value: this.resultModel.temperature
+        }
+      }),
+      _vm._v(" "),
+      _c("DisplayElement", {
+        attrs: { label: "City", value: this.resultModel.location.city }
+      }),
+      _vm._v(" "),
+      _c("DisplayElement", {
+        attrs: { label: "State", value: this.resultModel.location.state }
       })
     ],
     1
@@ -39430,7 +39417,9 @@ var render = function() {
               ),
               _vm._v(" "),
               _vm.showResultList
-                ? _c("ResultList", { attrs: { resultList: _vm.resultList } })
+                ? _c("ResultList", {
+                    attrs: { resultList: _vm.getResultList() }
+                  })
                 : _vm._e()
             ],
             1
@@ -54608,8 +54597,8 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/oswald/devlocal/xpedigo/resources/js/app.js */"./resources/js/app.js");
-module.exports = __webpack_require__(/*! /home/oswald/devlocal/xpedigo/resources/sass/app.scss */"./resources/sass/app.scss");
+__webpack_require__(/*! /home/oswald/devlocal/weatherapi/resources/js/app.js */"./resources/js/app.js");
+module.exports = __webpack_require__(/*! /home/oswald/devlocal/weatherapi/resources/sass/app.scss */"./resources/sass/app.scss");
 
 
 /***/ })

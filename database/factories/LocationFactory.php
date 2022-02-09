@@ -47,6 +47,7 @@ class LocationFactory extends Factory
             'lon' => '-' . $this->faker->randomFloat(rand(1, 4), 20, 90),
             'city' => $randomCity,
             'state' => $randomState,
+            'weather2_id' => $this->faker->numberBetween(1, 5),
         );
     }
 }
